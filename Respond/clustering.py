@@ -2,11 +2,35 @@
 import os
 from scipy.cluster.hierarchy import fcluster, linkage, dendrogram
 import matplotlib.pyplot as plt
-from sklearn.metrics import silhouette_score
+from sklearn.metrics import silhouette_score, silhouette_samples
 import numpy as np
 
+def evaluate_cluster_sil_score(df, row_clusters, col_clusters):
+    # Calculate silhouette scores
+    row_silhouette_score = silhouette_score(df, row_clusters)
+    col_silhouette_score = silhouette_score(df.T, col_clusters)
 
-def hierarchical_clustering(expression_df_heatmap, output_folder, row_threshold, col_threshold):
+    return row_silhouette_score, col_silhouette_score
+
+
+def evaluate_cluster_sil_score_mutated_samples(df, col_clusters, mutated_samples):
+    # Calculate silhouette scores
+    col_silhouette_scores = silhouette_samples(df.T, col_clusters)
+
+    # Filter the data to keep only mutated samples
+    mutated_samples_set = set(mutated_samples)
+    mutated_indices = [i for i, sample_id in enumerate(df.columns) if sample_id in mutated_samples_set]
+
+    # Filter col_silhouette_scores for mutated samples
+    mutated_silhouette_scores = [col_silhouette_scores[i] for i in mutated_indices]
+
+    # Calculate the average silhouette score for mutated samples
+    avg_mutated_silhouette_score = np.mean(mutated_silhouette_scores)
+
+    return avg_mutated_silhouette_score
+
+
+def hierarchical_clustering(expression_df_heatmap, output_folder, row_threshold, col_threshold, mutated_samples):
     # Cluster the rows and columns using hierarchical clustering
     row_linkage = linkage(expression_df_heatmap, method='ward')
     col_linkage = linkage(expression_df_heatmap.T, method='ward')
@@ -15,12 +39,8 @@ def hierarchical_clustering(expression_df_heatmap, output_folder, row_threshold,
     row_clusters = fcluster(row_linkage, t=row_threshold, criterion='maxclust')
     col_clusters = fcluster(col_linkage, t=col_threshold, criterion='maxclust')
 
-    # Calculate silhouette scores
-    row_silhouette_score = silhouette_score(expression_df_heatmap, row_clusters)
-    col_silhouette_score = silhouette_score(expression_df_heatmap.T, col_clusters)
-
-    print(f"Row Silhouette Score: {row_silhouette_score}")
-    print(f"Column Silhouette Score: {col_silhouette_score}")
+    row_score, col_score = evaluate_cluster_sil_score(expression_df_heatmap, row_clusters, col_clusters)
+    mutated_col_score = evaluate_cluster_sil_score_mutated_samples(expression_df_heatmap, col_clusters, mutated_samples)
 
     # Create dictionaries to store cluster information
     row_cluster_info = {f"Cluster {cluster}": expression_df_heatmap.index[row_clusters == cluster] for cluster in np.unique(row_clusters)}
@@ -28,7 +48,6 @@ def hierarchical_clustering(expression_df_heatmap, output_folder, row_threshold,
 
     row_cluster_file = os.path.join(output_folder, 'row_clusters.txt')
     with open(row_cluster_file, 'w') as file:
-        file.write(f"Row Silhouette Score: {row_silhouette_score}\n\n")
         for cluster, items in row_cluster_info.items():
             file.write(f"{cluster}:\n")
             file.write(f"{', '.join(items)}\n\n")
@@ -36,12 +55,11 @@ def hierarchical_clustering(expression_df_heatmap, output_folder, row_threshold,
     # Save column cluster information to a text file
     col_cluster_file = os.path.join(output_folder, 'col_clusters.txt')
     with open(col_cluster_file, 'w') as file:
-        file.write(f"Column Silhouette Score: {col_silhouette_score}\n\n")
         for cluster, items in col_cluster_info.items():
             file.write(f"{cluster}:\n")
             file.write(f"{', '.join(items)}\n\n")
     
-    return row_linkage, col_linkage, row_cluster_info, col_cluster_info, row_silhouette_score, col_silhouette_score
+    return row_linkage, col_linkage, row_cluster_info, col_cluster_info, row_score, col_score, mutated_col_score
 
 
 def plot_and_save_dendrograms(row_linkage, col_linkage, expression_df_heatmap, output_folder):
