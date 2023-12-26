@@ -45,6 +45,8 @@ def volcano_plot(input_file_path,
     plt.close()
     significant_genes_positive.to_csv(f'{output_folder}/signif_genes_positive.csv')
     significant_genes_negative.to_csv(f'{output_folder}/signif_genes_negative.csv')
+    pd.concat([significant_genes_negative, significant_genes_positive], axis=0, ignore_index=True)[['gene', 'logFC']].rename(
+    columns={'logFC': 'score'}).to_csv(f'{output_folder}/GSEA_input.txt', sep='\t', index=False)
 
     return significant_genes_positive, significant_genes_negative
 

@@ -106,4 +106,9 @@ def get_mutated_status(expression_df_heatmap, individuals_mutated_target_gene, o
     sample_categories_df.to_csv(output_filename,  index=False)
     return sample_categories_df
 
+def output_genes_with_highest_score(gene_scores, n, sortby='mutated_sample_sil_score'):
+    # Sort genes based on mutated_sample_sil_score in descending order
+    sorted_genes = sorted(gene_scores.items(), key=lambda x: x[1][sortby], reverse=True)
 
+    # return the top genes
+    return [(gene, scores) for gene, scores in sorted_genes[:n]]
