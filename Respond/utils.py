@@ -83,8 +83,8 @@ def generate_stats_per_gene(express_mut_genes_df, target_gene, output_folder):
     # Output data to csv 
     combined_data.drop(columns=['gene_expression_mutated', 'gene_expression_non_mutated'], inplace=True)
     
-    os.makedirs(output_folder, exist_ok=True)
-    output_filename = f'{output_folder}/{mutated_samples.count()}_{non_mutated_samples.count()}_logfc_pvalue.csv'
+    os.makedirs(f'{output_folder}/{target_gene}', exist_ok=True)
+    output_filename = f'{output_folder}/{target_gene}/{mutated_samples.count()}_{non_mutated_samples.count()}_logfc_pvalue.csv'
     
     print(f"outputting data to {output_filename}")
     combined_data.to_csv(output_filename, index=False)
@@ -92,7 +92,7 @@ def generate_stats_per_gene(express_mut_genes_df, target_gene, output_folder):
     return combined_data, mutated_samples, output_filename
 
 
-def get_mutated_status(expression_df_heatmap, individuals_mutated_target_gene, output_folder):
+def get_mutated_status(expression_df_heatmap, individuals_mutated_target_gene, output_folder, target_gene):
     individuals_mutated_target_gene = list(individuals_mutated_target_gene)
     
     mutated_status = [1 if item in individuals_mutated_target_gene else 0 for item in expression_df_heatmap.columns]
@@ -102,7 +102,7 @@ def get_mutated_status(expression_df_heatmap, individuals_mutated_target_gene, o
         'Mutation Status': mutated_status
     })
 
-    output_filename = f'{output_folder}/sample_mutation_status.csv'
+    output_filename = f'{output_folder}/{target_gene}/sample_mutation_status.csv'
     sample_categories_df.to_csv(output_filename,  index=False)
     return sample_categories_df
 

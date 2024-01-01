@@ -8,6 +8,7 @@ def volcano_plot(input_file_path,
                  yaxis, 
                  xaxis,
                  output_folder,
+                 target_gene,
                  significance_threshold, 
                  logfold_positive_threshold, 
                  logfold_negative_threshold):
@@ -40,18 +41,16 @@ def volcano_plot(input_file_path,
     fig.legend(handles, labels, loc='center left', bbox_to_anchor=(1, 0.5))
     
     
-    output_filename = f'{output_folder}/volcano_plot.png'
+    output_filename = f'{output_folder}/{target_gene}/volcano_plot.png'
     plt.savefig(output_filename, bbox_inches='tight')
     plt.close()
-    significant_genes_positive.to_csv(f'{output_folder}/signif_genes_positive.csv')
-    significant_genes_negative.to_csv(f'{output_folder}/signif_genes_negative.csv')
-    pd.concat([significant_genes_negative, significant_genes_positive], axis=0, ignore_index=True)[['gene', 'logFC']].rename(
-    columns={'logFC': 'score'}).to_csv(f'{output_folder}/GSEA_input.txt', sep='\t', index=False)
+    significant_genes_positive.to_csv(f'{output_folder}/{target_gene}/signif_genes_positive.csv')
+    significant_genes_negative.to_csv(f'{output_folder}/{target_gene}/signif_genes_negative.csv')
 
     return significant_genes_positive, significant_genes_negative
 
 
-def create_gene_expression_boxplot(expression_df, significant_genes_df, mutated_status_df, output_folder, positive=1 ):
+def create_gene_expression_boxplot(expression_df, significant_genes_df, mutated_status_df, output_folder, target_gene, positive=1 ):
     # Filter for significant genes
     filtered_expression_df_genes_of_interest = expression_df.loc[significant_genes_df.gene]
 
@@ -80,14 +79,14 @@ def create_gene_expression_boxplot(expression_df, significant_genes_df, mutated_
     plt.xticks(rotation=45, ha='right')
 
     if positive == 1:
-        output_filename = f'{output_folder}/positive_genes_expression_boxplot.png'
+        output_filename = f'{output_folder}/{target_gene}/positive_genes_expression_boxplot.png'
     else:
-        output_filename = f'{output_folder}/negative_genes_expression_boxplot.png'
+        output_filename = f'{output_folder}/{target_gene}/negative_genes_expression_boxplot.png'
     plt.savefig(output_filename)
     plt.close()
 
 
-def histogram_of_column_and_save(df, column, output_folder):
+def histogram_of_column_and_save(df, column, output_folder, target_gene):
     # Plot the distribution of p-values
     plt.figure(figsize=(10, 6))
     plt.hist(df[column], bins=30, color='blue', edgecolor='black')
@@ -95,7 +94,7 @@ def histogram_of_column_and_save(df, column, output_folder):
     plt.xlabel('P-values')
     plt.ylabel('Frequency')
 
-    output_filename = f'{output_folder}/histogram_{column}.png'
+    output_filename = f'{output_folder}/{target_gene}/histogram_{column}.png'
     # Save the histogram plot to a file
     plt.savefig(output_filename)
     plt.close()
@@ -105,7 +104,8 @@ def create_clustered_heatmap_and_save(expression_df_heatmap,
                                       row_linkage, 
                                       col_linkage, 
                                       sample_mutation_df, 
-                                      output_folder):
+                                      output_folder,
+                                      target_gene):
     # Group labels and colors for color bar
     type_map = {1: 'red', 0: 'yellow'}
 
@@ -128,7 +128,7 @@ def create_clustered_heatmap_and_save(expression_df_heatmap,
     #Set the size of the overall figure
     clustered_df.fig.set_size_inches(15, len(expression_df_heatmap) * 0.2)  
 
-    output_filename = f'{output_folder}/heatmap.png'
+    output_filename = f'{output_folder}/{target_gene}/heatmap.png'
 
     clustered_df.ax_heatmap.set_yticklabels(clustered_df.ax_heatmap.get_yticklabels(), rotation=0)
     

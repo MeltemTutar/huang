@@ -1,7 +1,7 @@
 
-
-maf_file_path = 'data/RESPOND_247_coding_final.maf'
-expression_file_path = 'data/Expression_remove_BE.txt'
+maf_file_path = 'input_data/RESPOND_247_coding_final.maf'
+expression_file_path = 'input_data/Expression_remove_BE.txt'
+output_folder='output_data_v2'
 genes = ['FOXA1',
         'GYPB', 
         'ID1', 

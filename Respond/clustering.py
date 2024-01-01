@@ -30,7 +30,10 @@ def evaluate_cluster_sil_score_mutated_samples(df, col_clusters, mutated_samples
     return avg_mutated_silhouette_score
 
 
-def hierarchical_clustering(expression_df_heatmap, output_folder, row_threshold, col_threshold, mutated_samples):
+# TODO: modify this function so that it is for one feature at a time (row or col)
+# and call it twice from the main file. 
+# do this in the pydesq file
+def hierarchical_clustering(expression_df_heatmap, output_folder, row_threshold, col_threshold, mutated_samples, target_gene):
     # Cluster the rows and columns using hierarchical clustering
     row_linkage = linkage(expression_df_heatmap, method='ward')
     col_linkage = linkage(expression_df_heatmap.T, method='ward')
@@ -46,14 +49,14 @@ def hierarchical_clustering(expression_df_heatmap, output_folder, row_threshold,
     row_cluster_info = {f"Cluster {cluster}": expression_df_heatmap.index[row_clusters == cluster] for cluster in np.unique(row_clusters)}
     col_cluster_info = {f"Cluster {cluster}": expression_df_heatmap.columns[col_clusters == cluster] for cluster in np.unique(col_clusters)}
 
-    row_cluster_file = os.path.join(output_folder, 'row_clusters.txt')
+    row_cluster_file = os.path.join(output_folder, target_gene, 'row_clusters.txt')
     with open(row_cluster_file, 'w') as file:
         for cluster, items in row_cluster_info.items():
             file.write(f"{cluster}:\n")
             file.write(f"{', '.join(items)}\n\n")
 
     # Save column cluster information to a text file
-    col_cluster_file = os.path.join(output_folder, 'col_clusters.txt')
+    col_cluster_file = os.path.join(output_folder, target_gene, 'col_clusters.txt')
     with open(col_cluster_file, 'w') as file:
         for cluster, items in col_cluster_info.items():
             file.write(f"{cluster}:\n")
@@ -62,7 +65,7 @@ def hierarchical_clustering(expression_df_heatmap, output_folder, row_threshold,
     return row_linkage, col_linkage, row_cluster_info, col_cluster_info, row_score, col_score, mutated_col_score
 
 
-def plot_and_save_dendrograms(row_linkage, col_linkage, expression_df_heatmap, output_folder):
+def plot_and_save_dendrograms(row_linkage, col_linkage, expression_df_heatmap, output_folder, target_gene):
     # Plot the row dendrogram
     plt.figure(figsize=(12, 10))
     # play around with fig sizes 
@@ -73,7 +76,7 @@ def plot_and_save_dendrograms(row_linkage, col_linkage, expression_df_heatmap, o
     plt.title('Row Dendrogram')
     
     # Save the row dendrogram plot to a file
-    row_dendrogram_filename = f'{output_folder}/row_dendrogram.png'
+    row_dendrogram_filename = f'{output_folder}/{target_gene}/row_dendrogram.png'
     plt.savefig(row_dendrogram_filename)
     plt.close()
 
@@ -85,7 +88,7 @@ def plot_and_save_dendrograms(row_linkage, col_linkage, expression_df_heatmap, o
     plt.title('Column Dendrogram')
     
     # Save the column dendrogram plot to a file
-    col_dendrogram_filename = f'{output_folder}/col_dendrogram.png'
+    col_dendrogram_filename = f'{output_folder}/{target_gene}/col_dendrogram.png'
     plt.savefig(col_dendrogram_filename)
     plt.close()
 
