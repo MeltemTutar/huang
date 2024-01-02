@@ -51,6 +51,13 @@ def volcano_plot(input_file_path,
 
 
 def create_gene_expression_boxplot(expression_df, significant_genes_df, mutated_status_df, output_folder, target_gene, positive=1 ):
+
+    if len(significant_genes_df)==0:
+        if positive ==1:
+            print(f"for gene {target_gene} no significant positive  genes found, so no box plot created")
+        elif positive ==0:
+            print(f"for gene {target_gene} no significant negative  genes found, so no box plot created")
+        return
     # Filter for significant genes
     filtered_expression_df_genes_of_interest = expression_df.loc[significant_genes_df.gene]
 
@@ -67,7 +74,7 @@ def create_gene_expression_boxplot(expression_df, significant_genes_df, mutated_
     # Set up the plot
     plt.figure(figsize=(12, 8))
 
-    # Create a box plot with 'hue' for each gene and 'dodge' for Mutation Status
+    # Create a box plot with 'hue' for each gene and 'dodge' for Mutation Status 
     sns.boxplot(x='Gene', y='Expression', data=boxplot_df, hue='Target Gene Mutation Status', dodge=True)
 
     # Customize the plot

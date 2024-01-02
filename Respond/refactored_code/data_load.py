@@ -21,7 +21,7 @@ def load_txt_file(file_path):
     # df = preprocessing.deseq2_norm(df.T)[0]
 
     # take log2 of expression data to scale expression data
-    # df = df.map(utils.log2)
+    df = df.map(utils.log2)
 
     return df
 

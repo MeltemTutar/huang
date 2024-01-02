@@ -28,7 +28,7 @@ def create_gsea_expression_input_preranked(output_folder, target_gene, stats_pat
     stats_df=pd.read_csv(stats_path)
     stats_df=stats_df[['gene', 'logFC']]
     output_filename=f'{output_folder}/{target_gene}/preranked_genes.rnk'
-    stats_df.to_csv(output_filename, sep='\t', index=False)
+    stats_df.to_csv(output_filename, sep='\t', index=False, header=False)
 
 
 def create_mutation_label_gsea(gsea_expression_path, output_folder, target_gene):
