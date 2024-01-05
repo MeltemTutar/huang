@@ -1,6 +1,7 @@
 
 import data_load, constants 
 import pandas as pd
+import os
 
 def create_gsea_expression_input(output_folder):
     expression_df = data_load.load_txt_file_into_dataframe(file_path=constants.expression_file_path)
@@ -15,6 +16,8 @@ def create_gsea_expression_input(output_folder):
 
     # Reset the index and rename the index column
     expression_df = expression_df.reset_index().rename(columns={'index': 'NAME'})
+    os.makedirs(output_folder, exist_ok=True)
+
     output_path = f'{output_folder}/GSEA_expression_input.gct'
     with open(output_path, 'w') as file:
         file.write("#1.2\n")
@@ -38,10 +41,19 @@ def create_mutation_label_gsea(gsea_expression_path, output_folder, target_gene)
     gsea_mutation_df= expression_df.T.reset_index(names='sample')[['sample']].merge(
         mutation_df[mutation_df['gene']==target_gene].drop_duplicates(), on='sample', how='left')[['sample', 'mutation']].fillna(0)
 
+    os.makedirs(f'{output_folder}/{target_gene}', exist_ok=True)
     output_path=f'{output_folder}/{target_gene}/mutation_GSEA_input.cls'
+    
+    # check if first sample is 0.0 or 1.0 because this determines the order it needs to appear in cls file
+    gsea_mutation_df
+    if gsea_mutation_df['mutation'].iloc[0]==1.0:
+        second_line = f"#\t1.0\t0.0\n"
+    elif gsea_mutation_df['mutation'].iloc[0]==0.0:
+        second_line = f"#\t0.0\t1.0\n"
+
     with open(output_path, 'w') as file:
-        file.write(f"{gsea_mutation_df.shape[0]} \t {len(gsea_mutation_df['mutation'].unique())} \t \n")
-        file.write(f"# \t 1.0 \t 0.0 \n")
+        file.write(f"{gsea_mutation_df.shape[0]}\t{len(gsea_mutation_df['mutation'].unique())}\t1\n")
+        file.write(second_line)
     
     gsea_mutation_df[['mutation']].T.to_csv(output_path,
                                         index=False, header=False, sep='\t', mode='a')

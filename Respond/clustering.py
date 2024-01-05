@@ -32,7 +32,6 @@ def evaluate_cluster_sil_score_mutated_samples(df, col_clusters, mutated_samples
 
 # TODO: modify this function so that it is for one feature at a time (row or col)
 # and call it twice from the main file. 
-# do this in the pydesq file
 def hierarchical_clustering(expression_df_heatmap, output_folder, row_threshold, col_threshold, mutated_samples, target_gene):
     # Cluster the rows and columns using hierarchical clustering
     row_linkage = linkage(expression_df_heatmap, method='ward')

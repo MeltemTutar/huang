@@ -15,11 +15,11 @@ def load_txt_file_into_dataframe(file_path):
     # Read the .txt file into a pandas DataFrame
     df = pd.read_csv(file_path, sep='\t')  # Adjust the separator if needed
     
-    # normalize to be able to compare across samples
-    # TODO: ask if we need this step
-    # df = preprocessing.deseq2_norm(df.T)[0].T
+    # normalize to account for RNA sequencing depth (samples having different totals of RNA expression)
+    # this allows us to make comparisons for the same gene across samples
+    df = preprocessing.deseq2_norm(df.T)[0].T
     
-    # take log2 of expression data to scale expression data
+    # take log2 of expression data to scale expression data. Reduces the effect of outliers
     df = df.map(utils.log2)
 
     return df
