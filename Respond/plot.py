@@ -106,12 +106,47 @@ def histogram_of_column_and_save(df, column, output_folder, target_gene):
     plt.savefig(output_filename)
     plt.close()
 
+def create_heatmap_and_save(expression_df_heatmap,
+                            output_folder,
+                            output_file_name,
+                            target_gene
+                            ):
+
+    sns.set(font_scale=1.0) 
+
+    # Create a clustered heatmap
+    ax = sns.heatmap(
+        expression_df_heatmap,
+        annot=False,
+        xticklabels=False, 
+        yticklabels=expression_df_heatmap.index,
+        cmap='coolwarm'
+    )
+
+    #Set the size of the overall figure
+    # sns_df.fig.set_size_inches(15, len(expression_df_heatmap) * 0.2)  
+
+    output_filename = f'{output_folder}/{target_gene}/{output_file_name}'
+
+    # sns_df.ax_heatmap.set_yticklabels(sns_df.ax_heatmap.get_yticklabels(), rotation=0)
+    
+    # Save the plot to a file
+    plt.savefig(output_filename, bbox_inches='tight')
+
+    # Close the plot to prevent displaying it in the notebook (optional)
+    plt.close()
+
+    return ax
+    
+    
+
 
 def create_clustered_heatmap_and_save(expression_df_heatmap, 
                                       row_linkage, 
                                       col_linkage, 
                                       sample_mutation_df, 
                                       output_folder,
+                                      output_file_name,
                                       target_gene):
     # Group labels and colors for color bar
     type_map = {1: 'red', 0: 'yellow'}
@@ -135,7 +170,7 @@ def create_clustered_heatmap_and_save(expression_df_heatmap,
     #Set the size of the overall figure
     clustered_df.fig.set_size_inches(15, len(expression_df_heatmap) * 0.2)  
 
-    output_filename = f'{output_folder}/{target_gene}/heatmap.png'
+    output_filename = f'{output_folder}/{target_gene}/{output_file_name}'
 
     clustered_df.ax_heatmap.set_yticklabels(clustered_df.ax_heatmap.get_yticklabels(), rotation=0)
     

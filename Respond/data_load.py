@@ -1,6 +1,7 @@
 import utils
 import pandas as pd
 from pydeseq2 import preprocessing
+from scipy.stats import zscore
 
 def load_maf_data(file_path):
     # Define columns of interest
@@ -57,14 +58,39 @@ def preprocess_and_combine_mutation_expression(maf_df, expression_df):
 
     return express_mut_genes_df
 
-def generate_expression_heatmap(expression_df, volcano_plot_df, n):
+def generate_expression_heatmap(expression_df, volcano_plot_df, n, top):
     # Get the indices of the top n rows based on having smallest pvalues
 
-    top_n_indices = volcano_plot_df['pvalue'].nsmallest(n).index
+    if top == True: 
+        indices = volcano_plot_df['pvalue'].nsmallest(n).index
+    else:
+        indices = (-volcano_plot_df['pvalue']).nsmallest(n).index
     
-    top_n_rows = volcano_plot_df.loc[top_n_indices].set_index('gene')
+    top_n_rows = volcano_plot_df.loc[indices].set_index('gene')
 
     # go back to the expression df and make a heatmap of the top n genes
     expression_df_heatmap = expression_df.loc[top_n_rows.index]
     
     return expression_df_heatmap
+
+
+def generate_expression_heatmap_positive_negative_same(expression_df, volcano_plot_df, n):
+    # small p value, positive fold change
+    positive_sig = volcano_plot_df[(volcano_plot_df['pvalue'] < 0.005)].sort_values('logFC', ascending=False).head(n)
+    positive_sig_expression = expression_df.loc[positive_sig['gene']]
+
+    # small p value, negative fold change
+    negative_sig = volcano_plot_df[(volcano_plot_df['pvalue'] < 0.005)].sort_values('logFC', ascending=True).head(n)
+    negative_sig_expression = expression_df.loc[negative_sig['gene']]
+
+    # non significant. highest p valyes 
+    non_sig= volcano_plot_df.sort_values(by=['pvalue'], ascending=[False]).head(n)
+    non_sig_expression = expression_df.loc[non_sig['gene']]
+
+    positive_negative_same_expression_df = pd.concat([positive_sig_expression, negative_sig_expression, non_sig_expression])
+
+    # Calculate z-score by row (gene)
+    positive_negative_same_expression_df = positive_negative_same_expression_df.apply(zscore, axis=1, result_type='broadcast')
+
+    return positive_negative_same_expression_df,  positive_sig, negative_sig, non_sig
+
