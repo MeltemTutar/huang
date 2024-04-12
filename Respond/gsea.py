@@ -1,6 +1,7 @@
 
 import data_load, constants 
 import pandas as pd
+import numpy as np
 import os
 
 def create_gsea_expression_input(output_folder):
@@ -27,11 +28,21 @@ def create_gsea_expression_input(output_folder):
     expression_df.to_csv(output_path, index=False, sep='\t',  mode='a')
     return output_path
 
-def create_gsea_expression_input_preranked(output_folder, target_gene, stats_path):
+def create_gsea_expression_input_preranked(output_folder, target_gene, stats_path, logFC=1, pvalue=0.05):
     stats_df=pd.read_csv(stats_path)
-    stats_df=stats_df[['gene', 'logFC']]
+
+    # filter cols
+    stats_df = stats_df[(abs(stats_df['logFC']) >= logFC) & (stats_df['pvalue'] <+ pvalue)]
+
+    # Extract required columns
+    stats_df = stats_df[['gene', 'logFC', 'pvalue']]
+    
+    # Calculate the transformed expression
+    stats_df['metric'] = np.sign(stats_df['logFC']) * (-np.log10(stats_df['pvalue']))
+    
     output_filename=f'{output_folder}/{target_gene}/preranked_genes.rnk'
-    stats_df.to_csv(output_filename, sep='\t', index=False, header=False)
+    stats_df[['gene', 'metric']].to_csv(output_filename, sep='\t', index=False, header=False)
+
 
 
 def create_mutation_label_gsea(gsea_expression_path, output_folder, target_gene):

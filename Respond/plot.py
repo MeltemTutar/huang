@@ -18,8 +18,9 @@ def volcano_plot(input_file_path,
     df['-log10_pvalue'] = -np.log10(df[yaxis])
 
     # Highlight significant points with large log-fold changes
-    significant_genes_positive = df[(df[yaxis] < significance_threshold) & (df['logFC'] > logfold_positive_threshold)]
-    significant_genes_negative = df[(df[yaxis] < significance_threshold) & (df['logFC'] < logfold_negative_threshold)]
+    # output top 25 only, to be able to see clearly on a plot
+    significant_genes_positive = df[(df[yaxis] < significance_threshold) & (df['logFC'] > logfold_positive_threshold)].sort_values(by='logFC', ascending=False).head(25)
+    significant_genes_negative = df[(df[yaxis] < significance_threshold) & (df['logFC'] < logfold_negative_threshold)].sort_values(by='logFC', ascending=True).head(25)
 
     # Clip outliers in 'logFC' column for the plot
     df['logFC'] = df['logFC'].clip(lower=-10, upper=10)

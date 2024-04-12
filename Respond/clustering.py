@@ -46,8 +46,17 @@ def hierarchical_clustering(expression_df_heatmap, output_folder, row_threshold,
 
     # Create dictionaries to store cluster information
     row_cluster_info = {f"Cluster {cluster}": expression_df_heatmap.index[row_clusters == cluster] for cluster in np.unique(row_clusters)}
-    col_cluster_info = {f"Cluster {cluster}": expression_df_heatmap.columns[col_clusters == cluster] for cluster in np.unique(col_clusters)}
+    # col_cluster_info = {f"Cluster {cluster}": expression_df_heatmap.columns[col_clusters == cluster] for cluster in np.unique(col_clusters)}
 
+    col_cluster_info = {}
+    for cluster in np.unique(col_clusters):
+        samples_in_cluster = expression_df_heatmap.columns[col_clusters == cluster]
+        mutated_samples_in_cluster = [sample for sample in samples_in_cluster if sample in set(mutated_samples)]
+        col_cluster_info[f"Cluster {cluster}"] = [
+            f"samples: {samples_in_cluster}",
+            f"mutated_samples_count': {len(mutated_samples_in_cluster)}"
+        ]
+        
     row_cluster_file = os.path.join(output_folder, target_gene, 'row_clusters.txt')
     with open(row_cluster_file, 'w') as file:
         for cluster, items in row_cluster_info.items():
